@@ -4,32 +4,46 @@
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
     Super::BeginPlay();
+    SetupGame();
 
-    // Welcome the player
-    PrintLine(TEXT("Welcome to Bull Cows!"));
-    PrintLine(TEXT("Guess the four-letter word.")); // Magic number
-
-    // Set up the game
-    HiddenWord = TEXT("cake"); // Set the hidden word
-
-    // Set lives
-    // Prompt player for guess
+    // Debug line
+    PrintLine(TEXT("The hidden word is: %s."), *HiddenWord);
 }
 
 void UBullCowCartridge::OnInput(const FString &Input) // When the player hits enter
 {
-    ClearScreen();
-
-    // Check player guess
-    if (Input == HiddenWord)
+    if (bGameOver)
     {
-        PrintLine(TEXT("You got it!"));
+        ClearScreen();
+        SetupGame();
     }
-    else
+    else // Check player guess
     {
-        PrintLine(TEXT("Nope, sorry!"));
+        ProcessGuess(Input);
     }
+}
 
+void UBullCowCartridge::SetupGame()
+{
+    HiddenWord = TEXT("cakes");
+    Lives = HiddenWord.Len();
+    bGameOver = false;
+
+    // Welcome the player
+    PrintLine(TEXT("Welcome to Bull Cows!"));
+    PrintLine(TEXT("Guess the %i-letter word."), HiddenWord.Len());
+    PrintLine(TEXT("You have %i lives."), Lives);
+    PrintLine(TEXT("Type in your guess and\npress Enter to continue."));
+}
+
+void UBullCowCartridge::EndGame()
+{
+    bGameOver = true;    
+    PrintLine(TEXT("Press Enter to play again."));
+}
+
+void UBullCowCartridge::ProcessGuess(FString Guess)
+{
     // Check if isogram
     // Prompt to guess again
     // Check right number of characters
@@ -44,4 +58,28 @@ void UBullCowCartridge::OnInput(const FString &Input) // When the player hits en
     // Prompt to play again, press Enter to play again
     // Check user input
     // Play again or quit
+
+    if (Guess == HiddenWord)
+    {
+        PrintLine(TEXT("You got it!"));
+        EndGame();
+        return;
+    }
+
+    --Lives;
+    PrintLine(TEXT("Oops, wrong guess."));
+    PrintLine(TEXT("You have %i lives remaining."), Lives);
+
+    if (Lives <= 0)
+    {
+        PrintLine(TEXT("You lose!"));
+        PrintLine(TEXT("The hidden word was %s"), *HiddenWord);
+        EndGame();
+        return;
+    }
+
+    if (Guess.Len() != HiddenWord.Len())
+    {
+        PrintLine(TEXT("The hidden word is %i characters long."), HiddenWord.Len());
+    }    
 }
